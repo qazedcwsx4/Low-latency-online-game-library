@@ -10,10 +10,6 @@
 
 void hello();
 
-class ServerTCP {
-
-};
-
 class ClientTCP {
 public:
     const int LIL_ERROR = 1;
