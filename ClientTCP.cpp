@@ -43,12 +43,7 @@ int ClientTCP::init() {
 
 int ClientTCP::send(const char *message) {
     int bytesSent;
-    int bytesRecv = SOCKET_ERROR;
-    char sendbuf[32] = "Client says hello!";
-    char recvbuf[32] = "";
     bytesSent = ::send(mainSocket, message, strlen(message), 0);
-
-    printf("Bytes sent: %ld\n", bytesSent);
     return LIL_SUCCESS;
 }
 
