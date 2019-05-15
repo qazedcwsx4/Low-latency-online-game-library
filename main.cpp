@@ -7,6 +7,9 @@ int main() {
     //hello();
     ClientTCP succ("127.0.0.1", 4200);
     succ.init();
-    succ.send("test");
+    while (true){
+        Sleep(1000);
+        succ.send("test\0");
+    }
     return 0;
 }
