@@ -1,10 +1,5 @@
 #include "ClientTCP.h"
 
-
-void hello() {
-    std::cout << "Hello, Worldd!" << std::endl;
-}
-
 ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port) {
 
 }
@@ -56,13 +51,17 @@ void ClientTCP::recvThread() {
             recvbuf[i] = ' ';
         }
         bytesRecv = recv(mainSocket, recvbuf, 32, 0);
-        printf("Received text: %s\n", recvbuf);
+        messages.push("XD");
+        printf("%d", messages.size());
+        //TODO implement Message structure and headers
+        //printf("Received text: %.32s\n", recvbuf);
     }
 }
 
 int ClientTCP::startRecv() {
     recvWorking = true;
     recvTh = std::thread(&ClientTCP::recvThread, this);
+    return LIL_SUCCESS;
 }
 
 

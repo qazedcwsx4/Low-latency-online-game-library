@@ -3,10 +3,10 @@
 
 #include <cstdio>
 #include <cstdlib>
-
 #include <winsock2.h>
 #include <iostream>
 #include <thread>
+#include <queue>
 
 void hello();
 
@@ -14,6 +14,7 @@ class ClientTCP {
 public:
     const int LIL_ERROR = 1;
     const int LIL_SUCCESS = 0;
+    std::queue <char*> messages;
 
 private:
     const char *addr;
