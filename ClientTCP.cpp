@@ -5,12 +5,12 @@ void hello() {
     std::cout << "Hello, Worldd!" << std::endl;
 }
 
-ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port), shouldDie(false) {
+ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port) {
 
 }
 
 ClientTCP::~ClientTCP() {
-    recvTh.join();
+    if (recvWorking) recvTh.join();
     closesocket(mainSocket);
     WSACleanup();
 }
@@ -52,12 +52,16 @@ void ClientTCP::recvThread() {
     int bytesRecv = SOCKET_ERROR;
 
     while (!shouldDie) {
+        for (int i = 0; i < 32; ++i) {
+            recvbuf[i] = ' ';
+        }
         bytesRecv = recv(mainSocket, recvbuf, 32, 0);
         printf("Received text: %s\n", recvbuf);
     }
 }
 
 int ClientTCP::startRecv() {
+    recvWorking = true;
     recvTh = std::thread(&ClientTCP::recvThread, this);
 }
 

@@ -18,7 +18,8 @@ public:
 private:
     const char *addr;
     const int port;
-    bool shouldDie;
+    bool shouldDie = false;
+    bool recvWorking = false;
     SOCKET mainSocket;
     std::thread recvTh;
 
