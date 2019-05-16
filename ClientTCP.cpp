@@ -6,19 +6,25 @@ ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port) 
 
 ClientTCP::~ClientTCP() {
     if (recvWorking) recvTh.join();
-    closesocket(mainSocket);
+    shutdown(mainSocket, SHUT_RDWR);
+#ifdef __WIN32
     WSACleanup();
+#endif
 }
 
 int ClientTCP::init() {
+#ifdef __WIN32
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != NO_ERROR)
         return LIL_ERROR;
+#endif
     mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (mainSocket == INVALID_SOCKET) {
         //printf("Error creating socket: %ld\n", WSAGetLastError());
+#ifdef __WIN32
         WSACleanup();
+#endif
         return LIL_ERROR;
     }
 

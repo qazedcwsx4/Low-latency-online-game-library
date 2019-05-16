@@ -3,7 +3,15 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <winsock2.h>
+#ifdef _WIN32
+    #include <winsock2.h>
+#elif __linux__
+    #define SOCKET_ERROR (-1)
+    #include <netinet/in.h>
+    #include <libnet.h>
+    #include <pcap.h>
+#endif
+
 #include <iostream>
 #include <thread>
 #include <queue>
