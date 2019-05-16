@@ -27,9 +27,11 @@ int ClientTCP::init() {
     service.sin_family = AF_INET;
     service.sin_addr.s_addr = inet_addr(addr);
     service.sin_port = htons((u_short) port);
-    if (connect(mainSocket, (SOCKADDR *) &service, sizeof(service)) == SOCKET_ERROR) {
+    if (connect(mainSocket, (sockaddr *) &service, sizeof(service)) == SOCKET_ERROR) {
         //printf( "Failed to connect.\n" );
+#ifdef __WIN32
         WSACleanup();
+#endif
         return LIL_ERROR;
     }
     startRecv();
@@ -54,7 +56,7 @@ void ClientTCP::recvThread() {
         messages.push("XD");
         printf("%d", messages.size());
         //TODO implement Message structure and headers
-        //printf("Received text: %.32s\n", recvbuf);
+        printf("Received text: %.32s\n", recvbuf);
     }
 }
 

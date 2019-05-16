@@ -6,9 +6,9 @@
 int main() {
     //hello();
     ClientTCP succ("127.0.0.1", 4200);
-    succ.init();
+    std::cout << "XD: " << succ.init();
     while (true){
-        Sleep(1000);
+        sleep(1);
         succ.send("test\0");
     }
     return 0;
