@@ -5,15 +5,19 @@ ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port) 
 }
 
 ClientTCP::~ClientTCP() {
-    if (recvWorking) recvTh.join();
-    shutdown(mainSocket, SHUT_RDWR);
-#ifdef __WIN32
+    shouldDie = true;
+    if (recvWorking) recvTh.detach();
+    //if (recvWorking) recvTh.join();
+#ifdef _WIN32
+    shutdown(mainSocket, SD_BOTH);
     WSACleanup();
+#elif __linux__
+    shutdown(mainSocket, SHUT_RDWR);
 #endif
 }
 
 int ClientTCP::init() {
-#ifdef __WIN32
+#ifdef _WIN32
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (result != NO_ERROR)
@@ -44,25 +48,41 @@ int ClientTCP::init() {
     return LIL_SUCCESS;
 }
 
-int ClientTCP::send(const char *message) {
+int ClientTCP::send(const char *data, size_t size, unsigned int type) {
     int bytesSent;
-    bytesSent = ::send(mainSocket, message, strlen(message), 0);
+    const size_t headerSize = sizeof(size_t) + sizeof(int) + sizeof(time_t);
+    char *headerBuffer = new char[headerSize];
+    time_t time = std::time(nullptr);
+    headerBuffer[0] = static_cast<char>(size);
+    headerBuffer[sizeof(size_t)] = static_cast<char>(type);
+    headerBuffer[sizeof(size_t) + sizeof(unsigned int)] = static_cast<char>(time);
+
+    bytesSent = ::send(mainSocket, headerBuffer, headerSize, 0);
+    bytesSent = ::send(mainSocket, data, size, 0);
+    delete[] headerBuffer;
     return LIL_SUCCESS;
 }
 
 void ClientTCP::recvThread() {
-    char recvbuf[32] = "";
     int bytesRecv = SOCKET_ERROR;
+    const size_t headerSize = sizeof(size_t) + sizeof(int) + sizeof(time_t);
+    char *headerBuffer = new char[headerSize];
 
     while (!shouldDie) {
-        for (int i = 0; i < 32; ++i) {
-            recvbuf[i] = ' ';
-        }
-        bytesRecv = recv(mainSocket, recvbuf, 32, 0);
-        messages.push("XD");
-        printf("%d", messages.size());
-        //TODO implement Message structure and headers
-        printf("Received text: %.32s\n", recvbuf);
+        bytesRecv = recv(mainSocket, headerBuffer, headerSize, 0);
+        if (shouldDie) break;
+        auto size = static_cast<size_t>(headerBuffer[0]);
+        auto type = static_cast<unsigned int>(headerBuffer[sizeof(size_t)]);
+        auto time = static_cast<time_t>(headerBuffer[sizeof(size_t) + sizeof(unsigned int)]);
+
+        auto message = new Message(size, type, time);
+        bytesRecv = recv(mainSocket, static_cast<char *>(message->data), size, 0);
+        messages.push(message);
+        printf("Received text: %s\n", static_cast<char *>(message->data));
+
+        //messages.push("XD");
+        //printf("%d", messages.size());
+        //printf("Received text: %.32s\n", recvbuf);
     }
 }
 
@@ -70,6 +90,10 @@ int ClientTCP::startRecv() {
     recvWorking = true;
     recvTh = std::thread(&ClientTCP::recvThread, this);
     return LIL_SUCCESS;
+}
+
+Message *ClientTCP::popMessage() {
+
 }
 
 
