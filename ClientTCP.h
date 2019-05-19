@@ -7,10 +7,10 @@
 #include <thread>
 #include <time.h>
 #include <queue>
-#ifdef _WIN32
-    #include <winsock2.h>
 #include <mutex>
 
+#ifdef _WIN32
+    #include <winsock2.h>
 #elif __linux__
     #define SOCKET_ERROR (-1)
     #include <netinet/in.h>
