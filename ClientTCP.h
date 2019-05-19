@@ -35,6 +35,7 @@ private:
     SOCKET mainSocket;
     std::thread recvTh;
     std::queue <Message*> messages;
+    std::mutex messagesMutex;
 public:
     Message* popMessage();
 

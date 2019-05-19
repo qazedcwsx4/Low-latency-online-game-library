@@ -77,7 +77,11 @@ void ClientTCP::recvThread() {
 
         auto message = new Message(size, type, time);
         bytesRecv = recv(mainSocket, static_cast<char *>(message->data), size, 0);
+
+        messagesMutex.lock();
         messages.push(message);
+        messagesMutex.unlock();
+
         printf("Received text: %s\n", static_cast<char *>(message->data));
 
         //messages.push("XD");
@@ -93,7 +97,11 @@ int ClientTCP::startRecv() {
 }
 
 Message *ClientTCP::popMessage() {
-
+    messagesMutex.lock();
+    auto rv = messages.back();
+    messages.pop();
+    messagesMutex.unlock();
+    return rv;
 }
 
 
