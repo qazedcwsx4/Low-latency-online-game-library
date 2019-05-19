@@ -63,6 +63,7 @@ int ClientTCP::send(const char *data, size_t size, unsigned int type) {
     headerBuffer[sizeof(size_t) + sizeof(unsigned int)] = static_cast<char>(time);
 
     bytesSent = ::send(mainSocket, headerBuffer, headerSize, 0);
+    if (bytesSent <= 0) return SOCKET_ERROR;
     bytesSent = ::send(mainSocket, data, size, 0);
     delete[] headerBuffer;
 #ifdef DEBUG
@@ -79,21 +80,35 @@ void ClientTCP::recvThread() {
     while (!shouldDie) {
         bytesRecv = recv(mainSocket, headerBuffer, headerSize, 0);
         if (shouldDie) break;
-        auto size = static_cast<size_t>(headerBuffer[0]);
-        auto type = static_cast<unsigned int>(headerBuffer[sizeof(size_t)]);
-        auto time = static_cast<time_t>(headerBuffer[sizeof(size_t) + sizeof(unsigned int)]);
+        if (bytesRecv > 0) {
+            auto size = static_cast<size_t>(headerBuffer[0]);
+            auto type = static_cast<unsigned int>(headerBuffer[sizeof(size_t)]);
+            auto time = static_cast<time_t>(headerBuffer[sizeof(size_t) + sizeof(unsigned int)]);
 
-        auto message = new Message(size, type, time);
-        bytesRecv = recv(mainSocket, static_cast<char *>(message->data), size, 0);
+            auto message = new Message(size, type, time);
+            bytesRecv = recv(mainSocket, static_cast<char *>(message->data), size, 0);
 
-        messagesMutex.lock();
-        messages.push(message);
-        messagesMutex.unlock();
+            messagesMutex.lock();
+            messages.push(message);
+            messagesMutex.unlock();
 
 #ifdef DEBUG
-        printf("Received data: %s\n", static_cast<char *>(message->data));
+            printf("Received data: %s\n", static_cast<char *>(message->data));
 #endif
+        } else if (bytesRecv == 0) {
+#ifdef DEBUG
+            printf("Server quit\n");
+#endif
+            break;
+        } else {
+#ifdef DEBUG
+            printf("Socket error\n");
+#endif
+            break;
+        }
     }
+
+
 }
 
 int ClientTCP::startRecv() {
