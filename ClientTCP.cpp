@@ -1,5 +1,7 @@
 #include "ClientTCP.h"
 
+#define DEBUG
+
 ClientTCP::ClientTCP(const char *addr, const int port) : addr(addr), port(port) {
 
 }
@@ -45,6 +47,9 @@ int ClientTCP::init() {
         return LIL_ERROR;
     }
     startRecv();
+#ifdef DEBUG
+    printf("Init success\n");
+#endif
     return LIL_SUCCESS;
 }
 
@@ -60,6 +65,9 @@ int ClientTCP::send(const char *data, size_t size, unsigned int type) {
     bytesSent = ::send(mainSocket, headerBuffer, headerSize, 0);
     bytesSent = ::send(mainSocket, data, size, 0);
     delete[] headerBuffer;
+#ifdef DEBUG
+    printf("Sent data\n");
+#endif
     return LIL_SUCCESS;
 }
 
@@ -82,11 +90,9 @@ void ClientTCP::recvThread() {
         messages.push(message);
         messagesMutex.unlock();
 
-        printf("Received text: %s\n", static_cast<char *>(message->data));
-
-        //messages.push("XD");
-        //printf("%d", messages.size());
-        //printf("Received text: %.32s\n", recvbuf);
+#ifdef DEBUG
+        printf("Received data: %s\n", static_cast<char *>(message->data));
+#endif
     }
 }
 
