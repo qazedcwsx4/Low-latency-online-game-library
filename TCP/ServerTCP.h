@@ -11,9 +11,7 @@
 #include <list>
 
 #ifdef _WIN32
-
 #include <winsock2.h>
-
 #elif __linux__
 #define SOCKET_ERROR (-1)
 #include <netinet/in.h>
@@ -21,7 +19,7 @@
 #include <pcap.h>
 #endif
 
-#include "Message.h"
+#include "../Message.h"
 
 struct ClientData {
     SOCKET socket;
@@ -61,4 +59,4 @@ private:
 };
 
 
-#endif //LIL_SERVERTCP_H
+#endif

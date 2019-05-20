@@ -107,8 +107,6 @@ void ClientTCP::recvThread() {
             break;
         }
     }
-
-
 }
 
 int ClientTCP::startRecv() {

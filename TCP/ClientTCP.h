@@ -1,5 +1,5 @@
-#ifndef LIL_LIBRARY_H
-#define LIL_LIBRARY_H
+#ifndef LIL_CLIENTTCP_H
+#define LIL_CLIENTTCP_H
 
 #include <cstdio>
 #include <cstdlib>
@@ -10,15 +10,15 @@
 #include <mutex>
 
 #ifdef _WIN32
-    #include <winsock2.h>
+#include <winsock2.h>
 #elif __linux__
-    #define SOCKET_ERROR (-1)
-    #include <netinet/in.h>
-    #include <libnet.h>
-    #include <pcap.h>
+#define SOCKET_ERROR (-1)
+#include <netinet/in.h>
+#include <libnet.h>
+#include <pcap.h>
 #endif
 
-#include "Message.h"
+#include "../Message.h"
 
 void hello();
 
@@ -34,10 +34,10 @@ private:
     bool recvWorking = false;
     SOCKET mainSocket;
     std::thread recvTh;
-    std::queue <Message*> messages;
+    std::queue<Message *> messages;
     std::mutex messagesMutex;
 public:
-    Message* popMessage();
+    Message *popMessage();
 
     ClientTCP(const char *addr, const int port);
 
@@ -50,6 +50,7 @@ public:
 
 private:
     void recvThread();
+
     int startRecv();
 
 };

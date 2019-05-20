@@ -1,5 +1,5 @@
-#include "ClientTCP.h"
-#include "ServerTCP.h"
+#include "TCP/ClientTCP.h"
+#include "TCP/ServerTCP.h"
 
 int main() {
     ServerTCP succ("127.0.0.1", 4202);

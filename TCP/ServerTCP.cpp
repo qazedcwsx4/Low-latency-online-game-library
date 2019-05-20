@@ -125,7 +125,6 @@ int ServerTCP::start() {
                     printf("Error creating socket: %ld\n", WSAGetLastError());
 #endif
                 }
-
             }
         }
     }

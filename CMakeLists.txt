@@ -3,7 +3,7 @@ project(lil)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_library(lil ClientTCP.cpp ClientTCP.h ServerTCP.cpp ServerTCP.h Message.cpp Message.h)
+add_library(lil TCP/ClientTCP.cpp TCP/ClientTCP.h TCP/ServerTCP.cpp TCP/ServerTCP.h Message.cpp Message.h)
 add_executable(server server.cpp)
 add_executable(client client.cpp)
 
