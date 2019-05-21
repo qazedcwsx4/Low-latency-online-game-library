@@ -55,17 +55,14 @@ int ClientTCP::init() {
 
 int ClientTCP::send(const char *data, size_t size, unsigned int type) {
     int bytesSent;
-    const size_t headerSize = sizeof(size_t) + sizeof(int) + sizeof(time_t);
-    char *headerBuffer = new char[headerSize];
-    time_t time = std::time(nullptr);
-    headerBuffer[0] = static_cast<char>(size);
-    headerBuffer[sizeof(size_t)] = static_cast<char>(type);
-    headerBuffer[sizeof(size_t) + sizeof(unsigned int)] = static_cast<char>(time);
+    auto headerBuffer = new char[Message::headerSize];
+    long time = static_cast<long int>(std::time(nullptr));
+    Message::createHeader(headerBuffer, size, type, time, 0);
 
-    bytesSent = ::send(mainSocket, headerBuffer, headerSize, 0);
+    bytesSent = ::send(mainSocket, headerBuffer, Message::headerSize, 0);
     if (bytesSent <= 0) return SOCKET_ERROR;
     bytesSent = ::send(mainSocket, data, size, 0);
-    delete[] headerBuffer;
+    //delete[] headerBuffer;
 #ifdef DEBUG
     printf("Sent data\n");
 #endif
@@ -74,26 +71,23 @@ int ClientTCP::send(const char *data, size_t size, unsigned int type) {
 
 void ClientTCP::recvThread() {
     int bytesRecv = SOCKET_ERROR;
-    const size_t headerSize = sizeof(size_t) + sizeof(int) + sizeof(time_t);
-    char *headerBuffer = new char[headerSize];
+    char headerBuffer[Message::headerSize];
 
     while (!shouldDie) {
-        bytesRecv = recv(mainSocket, headerBuffer, headerSize, 0);
+        bytesRecv = recv(mainSocket, headerBuffer, Message::headerSize, 0);
         if (shouldDie) break;
         if (bytesRecv > 0) {
-            auto size = static_cast<size_t>(headerBuffer[0]);
-            auto type = static_cast<unsigned int>(headerBuffer[sizeof(size_t)]);
-            auto time = static_cast<time_t>(headerBuffer[sizeof(size_t) + sizeof(unsigned int)]);
 
-            auto message = new Message(size, type, time);
-            bytesRecv = recv(mainSocket, static_cast<char *>(message->data), size, 0);
+            auto message = new Message(headerBuffer);
+            bytesRecv = recv(mainSocket, static_cast<char *>(message->data), message->size, 0);
 
             messagesMutex.lock();
             messages.push(message);
             messagesMutex.unlock();
 
 #ifdef DEBUG
-            printf("Received data: %s\n", static_cast<char *>(message->data));
+            printf("Received data: %s %d %d %ld\n", static_cast<char *>(message->data), message->size, message->type,
+                   static_cast<long int>(message->timeSent));
 #endif
         } else if (bytesRecv == 0) {
 #ifdef DEBUG

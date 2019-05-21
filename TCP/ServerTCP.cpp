@@ -91,18 +91,15 @@ int ServerTCP::start() {
             int bytesRecv = SOCKET_ERROR;
 
             if (FD_ISSET(i->socket, &socketReadSet)) {
-                const size_t headerSize = sizeof(size_t) + sizeof(int) + sizeof(time_t);
-                char *headerBuffer = new char[headerSize];
+                char headerBuffer[Message::headerSize];
 
-                bytesRecv = recv(i->socket, headerBuffer, headerSize, 0);
+                bytesRecv = recv(i->socket, headerBuffer, Message::headerSize, 0);
+                //printf("Error creating socket: %ld\n", WSAGetLastError());
 
                 if (bytesRecv > 0) {
-                    auto size = static_cast<size_t>(headerBuffer[0]);
-                    auto type = static_cast<unsigned int>(headerBuffer[sizeof(size_t)]);
-                    auto time = static_cast<time_t>(headerBuffer[sizeof(size_t) + sizeof(unsigned int)]);
 
-                    auto message = new Message(size, type, time);
-                    bytesRecv = recv(i->socket, static_cast<char *>(message->data), size, 0);
+                    auto message = new Message(headerBuffer);
+                    bytesRecv = recv(i->socket, static_cast<char *>(message->data), message->size, 0);
 
                     i->messagesMutex.lock();
                     i->messages.push(message);
