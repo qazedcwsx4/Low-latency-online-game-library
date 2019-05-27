@@ -60,9 +60,8 @@ int ClientTCP::send(const char *data, size_t size, unsigned int type) {
     Message::createHeader(headerBuffer, size, type, time, 0);
 
     bytesSent = ::send(mainSocket, headerBuffer, Message::headerSize, 0);
-    if (bytesSent <= 0) return SOCKET_ERROR;
+    if (bytesSent <= 0) return LIL_ERROR;
     bytesSent = ::send(mainSocket, data, size, 0);
-    //delete[] headerBuffer;
 #ifdef DEBUG
     printf("Sent data\n");
 #endif
