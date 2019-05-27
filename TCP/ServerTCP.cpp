@@ -79,14 +79,19 @@ int ServerTCP::recvThread() {
                 SOCKET_ERROR) {
                 return LIL_ERROR;
             }
+#ifdef DEBUG
             printf("cs %d\n", clientSocket);
-
+#endif
             if (clientSocket > maxSocket) {
                 maxSocket = clientSocket;
             }
             FD_SET(clientSocket, &socketMainSet);
             //FD_SET(clientSocket, &socketReadSet);
             clientsList.emplace_back(clientSocket, clientAddr);
+
+            simpleClientListMutex.lock();
+            simpleClientList.emplace_back(clientsList.back());
+            simpleClientListMutex.unlock();
 
 #ifdef DEBUG
             printf("New connection\n");
@@ -118,9 +123,23 @@ int ServerTCP::recvThread() {
                 } else if (bytesRecv == 0) {
                     //handle disconnect
 
-                    closesocket(i->socket);
                     FD_CLR(i->socket, &socketMainSet);
+
+                    //delete entry from simpleClientList
+                    simpleClientListMutex.lock();
+                    auto itr = simpleClientList.begin();
+                    while (itr != simpleClientList.end()){
+                        if (itr->socket == i->socket)
+                        {
+                            simpleClientList.erase(itr);
+                            break;
+                        }
+                    }
+                    simpleClientListMutex.unlock();
+
+                    closesocket(i->socket);
                     i = clientsList.erase(i);
+
 #ifdef DEBUG
                     printf("Client disconnected\n");
 #endif
@@ -138,4 +157,8 @@ int ServerTCP::startRecv() {
     recvWorking = true;
     recvTh = std::thread(&ServerTCP::recvThread, this);
     return LIL_SUCCESS;
+}
+
+const std::list<SimpleClientData> &ServerTCP::getSimpleClientList() const {
+    return simpleClientList;
 }

@@ -34,6 +34,17 @@ struct ClientData {
     }
 };
 
+struct SimpleClientData {
+    int socket;
+    in_addr ip;
+    ClientData &fullData;
+
+    SimpleClientData(ClientData &clientData) : fullData(clientData), socket(clientData.socket),
+                                               ip(clientData.data.sin_addr) {
+
+    }
+};
+
 class ServerTCP {
 public:
     const int LIL_ERROR = 1;
@@ -49,6 +60,8 @@ private:
     fd_set socketMainSet;
     int maxSocket;
     std::list<ClientData> clientsList;
+    std::list<SimpleClientData> simpleClientList;
+    std::mutex simpleClientListMutex;
 
 public:
     ServerTCP(const char *addr, const int port);
@@ -60,6 +73,8 @@ public:
     int recvThread();
 
     int startRecv();
+
+    const std::list<SimpleClientData> &getSimpleClientList() const;
 
 private:
 
