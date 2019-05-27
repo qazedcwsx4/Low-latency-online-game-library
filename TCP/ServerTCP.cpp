@@ -178,3 +178,14 @@ int ServerTCP::sendAll(const char *data, size_t size, unsigned int type) {
 
     return LIL_SUCCESS;
 }
+
+int ServerTCP::send(const SimpleClientData &scd, const char *data, size_t size, unsigned int type) {
+    int bytesSent;
+    auto headerBuffer = new char[Message::headerSize];
+    long time = static_cast<long int>(std::time(nullptr));
+    Message::createHeader(headerBuffer, size, type, time, 0);
+    bytesSent = ::send(scd.fullData.socket, headerBuffer, Message::headerSize, 0);
+    if (bytesSent <= 0) return LIL_ERROR;
+    bytesSent = ::send(scd.fullData.socket, data, size, 0);
+    return LIL_SUCCESS;
+}

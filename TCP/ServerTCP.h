@@ -80,6 +80,9 @@ public:
 
     int sendAll(const char *data, size_t size, unsigned int type);
 
+    int send(const SimpleClientData &scd, const char *data, size_t size, unsigned int type);
+
+
 private:
 
 };
