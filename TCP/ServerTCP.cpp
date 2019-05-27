@@ -128,9 +128,8 @@ int ServerTCP::recvThread() {
                     //delete entry from simpleClientList
                     simpleClientListMutex.lock();
                     auto itr = simpleClientList.begin();
-                    while (itr != simpleClientList.end()){
-                        if (itr->socket == i->socket)
-                        {
+                    while (itr != simpleClientList.end()) {
+                        if (itr->socket == i->socket) {
                             simpleClientList.erase(itr);
                             break;
                         }
@@ -161,4 +160,21 @@ int ServerTCP::startRecv() {
 
 const std::list<SimpleClientData> &ServerTCP::getSimpleClientList() const {
     return simpleClientList;
+}
+
+int ServerTCP::sendAll(const char *data, size_t size, unsigned int type) {
+    int bytesSent;
+    auto headerBuffer = new char[Message::headerSize];
+    long time = static_cast<long int>(std::time(nullptr));
+    Message::createHeader(headerBuffer, size, type, time, 0);
+
+    clientListMutex.lock();
+    for (auto i = clientsList.begin(); i != clientsList.end(); ++i) {
+        bytesSent = ::send(i->socket, headerBuffer, Message::headerSize, 0);
+        if (bytesSent <= 0) return LIL_ERROR;
+        bytesSent = ::send(i->socket, data, size, 0);
+    }
+    clientListMutex.unlock();
+
+    return LIL_SUCCESS;
 }

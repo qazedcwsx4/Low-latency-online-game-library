@@ -62,6 +62,8 @@ private:
     std::list<ClientData> clientsList;
     std::list<SimpleClientData> simpleClientList;
     std::mutex simpleClientListMutex;
+    std::mutex clientListMutex;
+
 
 public:
     ServerTCP(const char *addr, const int port);
@@ -75,6 +77,8 @@ public:
     int startRecv();
 
     const std::list<SimpleClientData> &getSimpleClientList() const;
+
+    int sendAll(const char *data, size_t size, unsigned int type);
 
 private:
 
