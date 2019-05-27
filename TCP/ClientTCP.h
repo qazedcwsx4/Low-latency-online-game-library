@@ -10,7 +10,9 @@
 #include <mutex>
 
 #ifdef _WIN32
+
 #include <winsock2.h>
+
 #elif __linux__
 #define SOCKET_ERROR (-1)
 #include <netinet/in.h>
@@ -37,7 +39,7 @@ private:
     std::queue<Message *> messages;
     std::mutex messagesMutex;
 public:
-    Message *popMessage();
+    Message *getMessage();
 
     ClientTCP(const char *addr, const int port);
 
@@ -53,6 +55,7 @@ private:
 
     int startRecv();
 
+    std::queue<Message *> &getMessages();
 };
 
 #endif

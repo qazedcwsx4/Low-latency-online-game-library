@@ -109,13 +109,26 @@ int ClientTCP::startRecv() {
     return LIL_SUCCESS;
 }
 
-Message *ClientTCP::popMessage() {
+std::queue<Message *> &ClientTCP::getMessages() {
     messagesMutex.lock();
-    auto rv = messages.back();
-    messages.pop();
+    std::queue<Message *> newQueue;
+    std::swap(messages, newQueue);
     messagesMutex.unlock();
-    return rv;
+    return messages;
 }
+
+Message *ClientTCP::getMessage() {
+    Message *ret;
+    messagesMutex.lock();
+    if (messages.empty()) ret = nullptr;
+    else {
+        ret = messages.back();
+        messages.pop();
+    }
+    messagesMutex.unlock();
+    return ret;
+}
+
 
 
 
