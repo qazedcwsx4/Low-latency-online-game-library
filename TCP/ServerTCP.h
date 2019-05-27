@@ -11,7 +11,9 @@
 #include <list>
 
 #ifdef _WIN32
+
 #include <winsock2.h>
+
 #elif __linux__
 #define SOCKET_ERROR (-1)
 #include <netinet/in.h>
@@ -41,6 +43,9 @@ private:
     const char *addr;
     const int port;
     SOCKET mainSocket;
+    std::thread recvTh;
+    bool shouldDie = false;
+    bool recvWorking = false;
     fd_set socketMainSet;
     int maxSocket;
     std::list<ClientData> clientsList;
@@ -52,7 +57,9 @@ public:
 
     int init();
 
-    int start();
+    int recvThread();
+
+    int startRecv();
 
 private:
 

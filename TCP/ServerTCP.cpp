@@ -7,8 +7,14 @@ ServerTCP::ServerTCP(const char *addr, const int port) : addr(addr), port(port) 
 }
 
 ServerTCP::~ServerTCP() {
-    closesocket(mainSocket);
+    shouldDie = true;
+    if (recvWorking) recvTh.detach();
+#ifdef _WIN32
+    shutdown(mainSocket, SD_BOTH);
     WSACleanup();
+#elif __linux__
+    shutdown(mainSocket, SHUT_RDWR);
+#endif
 }
 
 int ServerTCP::init() {
@@ -47,7 +53,7 @@ int ServerTCP::init() {
     return LIL_SUCCESS;
 }
 
-int ServerTCP::start() {
+int ServerTCP::recvThread() {
     fd_set socketReadSet;
 
     FD_ZERO(&socketMainSet);
@@ -57,11 +63,12 @@ int ServerTCP::start() {
     FD_SET(mainSocket, &socketMainSet);
     maxSocket = mainSocket;
 
-    while (true) {
+    while (!shouldDie) {
         socketReadSet = socketMainSet;
         if (select(maxSocket + 1, &socketReadSet, nullptr, nullptr, nullptr) == SOCKET_ERROR) {
             return LIL_ERROR;
         }
+        if (shouldDie) break;
 
         //process accept
         if (FD_ISSET(mainSocket, &socketReadSet)) {
@@ -125,4 +132,10 @@ int ServerTCP::start() {
             }
         }
     }
+}
+
+int ServerTCP::startRecv() {
+    recvWorking = true;
+    recvTh = std::thread(&ServerTCP::recvThread, this);
+    return LIL_SUCCESS;
 }
