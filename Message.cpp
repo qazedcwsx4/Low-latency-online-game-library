@@ -20,17 +20,26 @@ Message::~Message() {
 
 void Message::createHeader(char *headerBuffer, size_t size, int type, long timeSent,
                            int originalSender) {
-    std::copy(reinterpret_cast<char *>(&size), reinterpret_cast<char *>(&size) + sizeof(size_t), headerBuffer);
-    std::copy(reinterpret_cast<char *>(&type), reinterpret_cast<char *>(&type) + sizeof(int),
+    std::copy(reinterpret_cast<char *>(&size),
+              reinterpret_cast<char *>(&size) + sizeof(size_t),
+              headerBuffer);
+
+    std::copy(reinterpret_cast<char *>(&type),
+              reinterpret_cast<char *>(&type) + sizeof(int),
               headerBuffer + sizeof(size_t));
-    std::copy(reinterpret_cast<char *>(&timeSent), reinterpret_cast<char *>(&timeSent) + sizeof(long),
+
+    std::copy(reinterpret_cast<char *>(&timeSent),
+              reinterpret_cast<char *>(&timeSent) + sizeof(long),
               headerBuffer + sizeof(size_t) + sizeof(int));
-    std::copy(reinterpret_cast<char *>(&originalSender), reinterpret_cast<char *>(&originalSender) + sizeof(int),
+
+    std::copy(reinterpret_cast<char *>(&originalSender),
+              reinterpret_cast<char *>(&originalSender) + sizeof(int),
               headerBuffer + sizeof(size_t) + sizeof(int) + sizeof(long));
 }
 
 void Message::parseHeader(char *headerBuffer, size_t &size, int &type, long &timeSent,
                           int &originalSender) {
+
     size = *reinterpret_cast<size_t *>(headerBuffer);
     type = *reinterpret_cast<int *>(headerBuffer + sizeof(size_t));
     timeSent = *reinterpret_cast<time_t *>(headerBuffer + sizeof(size_t) + sizeof(int));
