@@ -190,3 +190,16 @@ int ServerTCP::send(const SimpleClientData &scd, const char *data, size_t size, 
     bytesSent = ::send(scd.fullData.socket, data, size, 0);
     return LIL_SUCCESS;
 }
+
+Message *ServerTCP::getMessage(const SimpleClientData &scd) {
+    Message *ret;
+    scd.fullData.messagesMutex.lock();
+    if (scd.fullData.messages.empty()) ret = nullptr;
+    else {
+        ret = scd.fullData.messages.back();
+        scd.fullData.messages.pop();
+    }
+    scd.fullData.messagesMutex.unlock();
+    return ret;
+}
+

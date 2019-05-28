@@ -78,6 +78,7 @@ public:
 
     int send(const SimpleClientData &scd, const char *data, size_t size, unsigned int type);
 
+    Message *getMessage(const SimpleClientData &scd);
 
 private:
 
