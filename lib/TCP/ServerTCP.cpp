@@ -46,7 +46,7 @@ int ServerTCP::init() {
         return LIL_ERROR;
     }
 
-
+    if (startRecv() < 0) return LIL_ERROR;
 #ifdef DEBUG
     printf("Init success\n");
 #endif
@@ -150,6 +150,7 @@ int ServerTCP::recvThread() {
             }
         }
     }
+    return 1;
 }
 
 int ServerTCP::startRecv() {

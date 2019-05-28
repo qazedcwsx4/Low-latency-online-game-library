@@ -72,10 +72,6 @@ public:
 
     int init();
 
-    int recvThread();
-
-    int startRecv();
-
     const std::list<SimpleClientData> &getSimpleClientList() const;
 
     int sendAll(const char *data, size_t size, unsigned int type);
@@ -84,6 +80,10 @@ public:
 
 
 private:
+
+    int recvThread();
+
+    int startRecv();
 
 };
 
