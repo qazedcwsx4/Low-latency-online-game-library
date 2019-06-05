@@ -120,8 +120,11 @@ int ServerTCP::recvThread() {
 #ifdef DEBUG
                     printf("Received data: %s\n", static_cast<char *>(message->data));
 #endif
-                } else if (bytesRecv == 0) {
+                } else if (bytesRecv <= 0) {
                     //handle disconnect
+#ifdef DEBUG
+                    if (bytesRecv < 0) printf("Error creating socket: %ld\n", WSAGetLastError());
+#endif
 
                     FD_CLR(i->socket, &socketMainSet);
 
@@ -141,10 +144,6 @@ int ServerTCP::recvThread() {
 
 #ifdef DEBUG
                     printf("Client disconnected\n");
-#endif
-                } else {
-#ifdef DEBUG
-                    printf("Error creating socket: %ld\n", WSAGetLastError());
 #endif
                 }
             }
